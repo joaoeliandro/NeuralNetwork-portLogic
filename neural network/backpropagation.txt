@@ -1,0 +1,113 @@
+/*
+    *   BACKPROPAGATION:
+    *
+    * 
+    *   1 NEURÔNIO NA CAMADA OCULTA E 1 SAÍDA
+    * 
+    *       1_ Calculo de erro da Saída: valor_real - valor_saída = resultado 
+    *           Exemplo: erro da saída -> 1 - 0.4 = 0.6 (ou 60% de 1)
+    *       2_ Calculo de erro da Oculta: erro_saída * sinapse (peso [oculta-saida]) = resultado
+    *           Exemplo: erro da oculta -> 0.6 * 0.8 = 0.48
+    *   
+    *   2 NEURÔNIOS NA CAMADA OCULTA E 1 SAÍDA
+    * 
+    *       1_ Calculo de erro da Saída: valor_real - valor_saída = resultado
+    *           Exemplo: erro da saída -> 1 - 0.17 = 0.83 (ou 83% de 1)
+    *       2_ Calculo de erro da oculta 1: Eo1 = [peso_ocul_saida1 / (peso_ocul_saida1 + peso_ocul_saida2)] * ErroSaida
+    *           Exemplo: erro da saída -> [0.1 / (0.1 + 0.4)] * 0.83 = 0.166
+    *       3_ Calculo de erro da oculta 2: Eo2 = [(peso_ocul_saida2) / (peso_ocul_saida1 + peso_ocul_saida2)] * ErroSaida
+    *           Exemplo: erro da saída -> [0.4 / (0.1 + 0.4)] * 0.83 = 0.664
+    *   
+    *   2 NEURÔNIOS NA CAMADA OCULTA E 2 SAÍDA
+    * 
+    *       1_ Calculo de erro da Saída1: valor_real1 - valor_saída1 = resultado1
+    *           Exemplo: erro da saída1 -> 1 - 0.212 = 0.788
+    *       2_ Calculo de erro da Saída2: valor_real2 - valor_saída2 = resultado2
+    *           Exemplo: erro da saída2 -> 0 - 0.232 = -0.232
+    *       3_ Calculo de erro da oculta 1: 
+    *   Eo1 = {[peso1_ocul1_saida1 / (peso1_ocul1_saida1 + peso1_ocul2_saida1)] * ErroSaida1} + 
+    *           {[peso2_ocul1_saida2 / (peso2_ocul1_saida2 + peso2_ocul2_saida2)] * ErroSaida2}
+    *           Exemplo: erro da saída -> 
+    *               {[0.1 / (0.1 + 0.9)] * 0.788} + {[0.6 / (0.6 + 0.2)] * -0.232} = 0.0952
+    *       4_ Calculo de erro da oculta 2: 
+    *   Eo2 = {[peso1_ocul2_saida1 / (peso1_ocul1_saida1 + peso1_ocul2_saida1)] * ErroSaida1} + 
+    *           {[peso2_ocul2_saida2 / (peso2_ocul1_saida2 + peso2_ocul2_saida2)] * ErroSaida2}
+    *           Exemplo: erro da saída -> 
+    *               {[0.9 / (0.1 + 0.9)] * 0.788} + {[0.2 / (0.6 + 0.2)] * -0.232} = 0.6512
+    * 
+    *   ADIÇÃO DO LEARNING_RATE
+    *       O quanto a rede neural vai absoverver do calculo de erro com valores entre 0 e 1 sendo porcentagem 
+    *
+    *   SEM NORMALIZAÇÃO E SEM LEARNING_RATE
+    *       2 NEURÔNIOS NA CAMADA OCULTA E 2 SAÍDA
+    *           Eo1 = (peso1_ocul1_saida1 * ErroSaida1) + (peso2_ocul1_saida2 * ErroSaida2) 
+    *           Eo2 = (peso1_ocul2_saida1 * ErroSaida1) + (peso2_ocul2_saida2 * ErroSaida2) 
+    * 
+    *           1_ Calculo:
+    *               T -> transposto
+    *               [peso1_ocul1_saida1; peso1_ocul2_saida1] T * [ErroSaida1] = [Eo1]
+    *               [peso2_ocul1_saida2; peso2_ocul2_saida2]     [ErroSaida2]   [Eo2]
+    * 
+    *   FUNÇÃO DE CUSTO
+    *       MSE (Erro Médio Quadrático)
+    *       O quanto a rede neural está indo bem ou mal
+    *           *   Se (MSE == valor_alto) {
+    *           *       Mal
+    *           *   } Senão {
+    *           *       Bem
+    *           *   }
+    * 
+    *           MSE = (valor_real - valor_saída)²
+    * 
+    *   DERIVAÇÃO
+    *       Para ajustar os pesos usando a taxa de variação da derivada
+    *       Derivada:    
+    *           f(x) = x^n     f'(x) = n*x^(n-1)
+    *           f(x) = x²      f'(x) = 2x
+    *       Regra da Cadeia:
+    *           y = g(f(x))       y' = f'(x) * g'(x)
+    *           y = (2x² + 5x)²   y' = 2(2x² + 5x) * 4x + 5
+    *       Derivada Parcial:
+    *           y = 5x² + 15z^100   dy / dx = 10x
+    * 
+    *   Gradient Descent
+    *       Técnica de otimização matemática com derivada positivamente nas sinapses (pesos) para ajusta-los
+    *       Para uma função linear
+    *           Exemplo:
+    * 
+    *           Função 1º grau -> equação da reta = mx + b 
+    *           MSE = (valor_real - valor_saida)²
+    *           valor_real = mx + b
+    *           
+    *           Erro = (mx + b - valor_saida)²
+    *           dErro / dm = 2*Erro * d(mx+b-valor_saida) / dm => x * m'
+    *           dErro / dm = 2 * Erro * x * m'
+    *       Adiciona o Learning_Rate
+    *           dErro / dm = 2 * Erro * x * m' * Learning_Rate
+    *           delt(m) = Erro * x * m'
+    *           delt(b) = Erro
+    * 
+    *       Função Sigmoid
+    *           1 saida, varias ocultas e entradas
+    *               Saida = f(peso11*ocul1 + peso12*ocul2 + peso13*ocul3 + ... + bias_ocul1)
+    *               Ocul1 = f(peso11*entrada1 + peso12*entrada2 + peso13*entrada3 + ... + bias_entrada1)
+    *               Ocul2 = f(peso21*entrada1 + peso22*entrada2 + peso23*entrada3 + ... + bias_entrada2)
+    *               OculN = f(pesoN1*entrada1 + pesoN2*entrada2 + pesoN3*entrada3 + ... + bias_entradaN)
+    * 
+    *       Variação das Sinapses (pesos) Saida para Ocultas
+    *           Erro, Saida e oT(oculta Transposto) -> matrizes
+    *           LR (Learning Rate) -> número
+    *           (*) -> produto hadamard
+    *           Calculo:
+    *               delta(pesos_saida_ocul) = Erro_Saida (*) dSaida * LR * oT
+    *           Os deltas(pesos_saida_ocul) somaram as sinapses(pesos) para ajusta-los
+    *       
+    *       Variação das Sinapses (pesos) Ocultas para Entrada
+    *           Erro, EntradasT(Transposto) e O(oculta) -> matrizes
+    *           LR (Learning Rate) -> número
+    *           (*) -> produto hadamard
+    *           Calculo:
+    *               delta(pesos_ocul_entrada) = Erro_Ocul (*) dO * LR * EntradasT
+    *           Os deltas(pesos_ocul_entrada) somaram as sinapses(pesos) para ajusta-los
+    * 
+*/
